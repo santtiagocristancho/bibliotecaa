@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 12-11-2022 a las 19:01:02
+-- Tiempo de generación: 20-11-2022 a las 18:02:40
 -- Versión del servidor: 10.4.21-MariaDB
 -- Versión de PHP: 8.0.10
 
@@ -31,16 +31,10 @@ CREATE TABLE `libros` (
   `id` bigint(20) NOT NULL,
   `titulo` varchar(150) NOT NULL,
   `id_autor` bigint(150) NOT NULL,
-  `disponible` tinyint(1) NOT NULL,
-  `fecha_muestra` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `disponible` tinyint(1) NOT NULL DEFAULT 1,
+  `estado` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `libros`
---
-
-INSERT INTO `libros` (`id`, `titulo`, `id_autor`, `disponible`, `fecha_muestra`) VALUES
-(16, 'ssad', 0, 1, '2022-11-12 17:59:02');
 
 -- --------------------------------------------------------
 
@@ -57,8 +51,8 @@ CREATE TABLE `personas` (
   `biografia` longtext DEFAULT NULL,
   `email` varchar(100) NOT NULL,
   `id_rol` bigint(20) DEFAULT NULL,
-  `disponible` tinyint(1) NOT NULL,
-  `fecha_muestra` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `disponible` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -71,8 +65,8 @@ CREATE TABLE `roles` (
   `id` bigint(20) NOT NULL,
   `nombre` varchar(150) NOT NULL,
   `descripcion` longtext DEFAULT NULL,
-  `disponible` tinyint(4) NOT NULL,
-  `fecha_muestra` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `estado` tinyint(4) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -90,7 +84,8 @@ ALTER TABLE `libros`
 --
 ALTER TABLE `personas`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `fk_personas_roles` (`id_rol`) USING BTREE;
 
 --
 -- Indices de la tabla `roles`
@@ -106,7 +101,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT de la tabla `libros`
 --
 ALTER TABLE `libros`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de la tabla `personas`
@@ -119,6 +114,16 @@ ALTER TABLE `personas`
 --
 ALTER TABLE `roles`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `personas`
+--
+ALTER TABLE `personas`
+  ADD CONSTRAINT `FK_personas_roles` FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
