@@ -1,8 +1,16 @@
 <?php
-require_once("conexion.php");
+include_once('conexion.php');
+$query = "SELECT id, CONCAT(IFNULL(primer_nombre,''),' ',IFNULL(segundo_nombre,''),' ',IFNULL(primer_apellido,''),' ',IFNULL(segundo_apellido,'')) AS autor FROM personas WHERE estado = 1";
+$autores = mysqli_query($con, $query) or die(mysqli_error($con));
 
-$query = "SELECT * FROM libros";
-$result = mysqli_query($con, $query);
+$query = "SELECT l.id AS id, l.titulo, CONCAT(IFNULL(primer_nombre,''),' ',IFNULL(segundo_nombre,''),' ',IFNULL(primer_apellido,''),' ',IFNULL(segundo_apellido,'')) AS autor, l.disponible 
+FROM libros AS l
+JOIN personas AS p ON l.id_autor = p.id
+WHERE l.estado = 1";
+$libros = mysqli_query($con, $query) or die(mysqli_error($con));
+
+var_dump($libros);
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -11,89 +19,87 @@ $result = mysqli_query($con, $query);
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css//style.css">
-    <title>Biblioteca</title>
+    <link rel="stylesheet" href="./estilos/style.css">
+    <title>LIBROS</title>
 </head>
 
 <body>
-    <div class="container1">
-        <h2 class="">BIBLIOTECA VIRTUAL</h2>
+    <div class="link">
+        <a href="./personas/index.php">Personas</a>
+    </div>
+    <div class="contenedor">
+        <h3>Ingresar datos</h3>
+        <form action="libros/recibir.php" method="post" autocomplete="off">
+            <label for="">Ecribe el titulo del libro</label>
+            <input type="text" id="titulo" name="titulo" placeholder="ingrese el titulo" required>
+            <br><br>
+            <label for="autor">autor</label>
+            <select id="id_autor" name="id_autor" required>
+                <option selected>Seleccione una Opcion...</option>
+                <?php foreach ($autores as $autor) : ?>
+                    <option value="<?= $autor['id'] ?>"><?= $autor['autor']  ?></option>";
+                <?php endforeach ?>
+            </select>
+            <br><br>
+            <label for="disponible">Disponible</label>
+            <select name="disponible" id="disponible" required>
+                <option selected>Seleccione una Opcion...</option>
+                <option value="1">disponible</option>
+                <option value="2">no disponible</option>
+            </select>
+            <br><br>
+            <button type="submit">enviar</button>
+        </form>
     </div>
 
-    <img src="img//libro.jpg">
+    <section class="tabla">
+        <h3>Registro de libros</h3>
+        <table>
+            <thead>
+                <tr>
+                    <td>#</td>
+                    <td>libro</td>
+                    <td>autor</td>
+                    <td>disponible</td>
+                    <td colspan="2">Opciones</td>
+                </tr>
+            </thead>
 
-    <form action="guardar.php" method="POST" enctype="multipart/form-data" autocomplete="off">
+            <tbody>
+                <?php
 
-        <label for="titulo" class="form-label">Titulo del Libro</label>
-        <input type="text" class="form-control" name="titulo" id="titulo" required>
+                if (mysqli_num_rows($libros) > 0) {
 
-        <br><br>
+                    $pos = 1;
 
-        <label for="autor" class="form-label">Autor del Libro</label>
-        <input type="text" class="form-control" name="autor" id="id_autor" required>
+                    while ($libro = mysqli_fetch_assoc($libros)) {
 
-        <br><br>
-
-        <label for="disponible" class="form-label">Disponible</label>
-        <input type="number" class="form-control" name="disponible" id="disponible" min="0" max="1" required>
-
-        <br><br>
-
-        <button type="submit" class="btn btn-sm btn-outline-primary bg-white">Enviar</button>
-
-        <div class="container2">
-            <!-- Tabla -->
-
-            <h4>Registro De Libros Escogidos</h4>
-            <table class="">
-                <thead>
-                    <tr class="">
-                        <td>Toma #</td>
-                        <td>Fecha</td>
-
-                        <td>Titulo Libro</td>
-
-                        <td>Autor del Libro</td>
-
-                        <td>Estado</td>
-                        <td colspan="2">Opciones</td>
-                    </tr>
-                </thead>
-
-                <tbody class="">
-                    <?php
-                    if (mysqli_num_rows($result) > 0) {
-                        $pos        = 1;
-                        $datos   = 0;
-
-                        while ($data = mysqli_fetch_assoc($result)) {
-                            //   $muestras = [$data['titulo'], $data['autor'], $data['disponible']];
-                            $fecha_muestra = date_format(date_create($data['fecha_muestra']), 'd-m-Y');
-                    ?>
-                            <tr>
-                                <td><?php echo $pos; ?></td>
-                                <td><?php echo $fecha_muestra; ?></td>
-                                <td><?php echo $data['titulo']; ?></td>
-                                <td><?php echo $data['id_autor']; ?></td>
-                                <td><?php echo $data['disponible']; ?></td>
+                        //  $libros = [$data['titulo'], $data['autor'], $data['disponible']];
 
 
-                                <td><a href="editar.php?id=<?php echo $data['id']; ?>" class="btn btn-sm btn-outline-warning">Editar</a></td>
-                                <td><a href="eliminar.php?id=<?php echo $data['id']; ?>" class="btn btn-sm btn-outline-danger" value="">Eliminar</a></td>
-                            </tr>
-                        <?php $pos++;
-                        }
-                    } else { ?>
+
+                ?>
                         <tr>
-                            <td colspan="9">No hay datos</td>
+                            <td><?php echo $pos; ?></td>
+                            <td><?php echo $libro['titulo']; ?></td>
+                            <td><?php echo $libro['autor']; ?></td>
+                            <td><?php echo $libro['disponible'] ? 'SI' : 'NO'; ?></td>
+
+
+                            <td><a href="libros/editar.php?id=<?php echo $libro['id']; ?>">editar</a></td>
+                            <td><a href="libros/eliminar.php?id=<?php echo $libro['id']; ?>" value="">eliminar</a></td>
                         </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </div>
+                    <?php $pos++;
+                    }
+                } else { ?>
+                    <tr>
+                        <td colspan="9">no hay datos</td>
 
-
-    </form>
+                    </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </section>
 </body>
 
 </html>
