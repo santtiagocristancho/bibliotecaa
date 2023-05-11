@@ -1,7 +1,7 @@
 <?php
 $hostname   = "localhost";
 $user       = "root";
-$password   = null;
+$password   = "root";
 $database   = "crud";
 
 try {
